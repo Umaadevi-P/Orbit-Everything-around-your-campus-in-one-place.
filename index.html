@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbit — Campus Super App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gugi&family=ABeeZee:ital@0;1&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --cream:#FAF7F2;
+  --mint:#74DCC6;
+  --mint-bg:#F1FFFB;
+  --sky:#78B7FF;
+  --sky-bg:#F4F9FF;
+  --sun:#FFB347;
+  --sun2:#FFD66B;
+  --sun-bg:#FFF9EF;
+  --purple:#A78BFA;
+  --purple-bg:#F7F3FF;
+  --shadow-dark:rgba(20,20,20,0.18);
+}
+
+body{
+  background:#1a1a2e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  font-family:'Roboto',sans-serif;
+  overflow:hidden;
+}
+
+.phone-wrap{
+  width:390px;
+  height:844px;
+  background:#111;
+  border-radius:48px;
+  box-shadow:0 40px 120px rgba(0,0,0,0.8),inset 0 0 0 2px rgba(255,255,255,0.12);
+  overflow:hidden;
+  position:relative;
+  flex-shrink:0;
+}
+
+.screen{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  display:none;
+  flex-direction:column;
+}
+.screen.active{display:flex}
+
+/* ── GRAIN OVERLAY ── */
+.grain{
+  pointer-events:none;
+  position:absolute;
+  inset:0;
+  z-index:999;
+  opacity:0.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+
+/* ── SPLASH ── */
+#splash{background:linear-gradient(145deg,#f0f9ff 0%,#e8f5f0 50%,#f5f0ff 100%);justify-content:center;align-items:center}
+.splash-inner{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center}
+.orbit-ring{
+  position:absolute;
+  border-radius:50%;
+  border:4px solid transparent;
+  animation:spin linear infinite;
+  opacity:0;
+}
+.orbit-ring:nth-child(1){width:220px;height:220px;border-top-color:#74DCC6;border-right-color:#74DCC650;animation-duration:4s;animation-delay:0.1s}
+.orbit-ring:nth-child(2){width:170px;height:170px;border-top-color:#78B7FF;border-left-color:#78B7FF50;animation-duration:3s;animation-direction:reverse;animation-delay:0.3s}
+.orbit-ring:nth-child(3){width:120px;height:120px;border-top-color:#FFB347;border-right-color:#FFB34750;animation-duration:2.5s;animation-delay:0.5s}
+.orbit-ring:nth-child(4){width:72px;height:72px;border-top-color:#A78BFA;border-left-color:#A78BFA50;animation-duration:2s;animation-direction:reverse;animation-delay:0.7s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orbit-logo-text{
+  position:absolute;
+  font-family:'Gugi',cursive;
+  font-size:28px;
+  color:#1a1a2e;
+  letter-spacing:2px;
+  opacity:0;
+  text-align:center;
+}
+.orbit-tagline{
+  position:absolute;
+  bottom:-48px;
+  width:200px;
+  text-align:center;
+  font-family:'ABeeZee',sans-serif;
+  font-size:13px;
+  color:rgba(30,30,60,0.5);
+  letter-spacing:1px;
+  opacity:0;
+}
+.splash-rings-enter .orbit-ring{animation-play-state:running}
+.splash-enter{animation:splashFadeIn 0.6s ease forwards}
+@keyframes splashFadeIn{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+
+/* Ring dot dots */
+.orbit-ring::after{
+  content:'';
+  position:absolute;
+  width:10px;height:10px;
+  border-radius:50%;
+  top:-5px;left:50%;
+  transform:translateX(-50%);
+  background:currentColor;
+}
+.orbit-ring:nth-child(1)::after{background:#74DCC6}
+.orbit-ring:nth-child(2)::after{background:#78B7FF}
+.orbit-ring:nth-child(3)::after{background:#FFB347}
+.orbit-ring:nth-child(4)::after{background:#A78BFA}
+
+/* ── NAV BAR - HIDDEN (using sidebar menu instead) ── */
+.bottom-nav{display:none!important}
+
+/* ── SCROLLABLE CONTENT ── */
+.scroll-body{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.scroll-body::-webkit-scrollbar{display:none}
+
+/* ── STATUS BAR ── */
+.status-bar{
+  height:48px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;flex-shrink:0;z-index:10;
+}
+.status-time{font-family:'Roboto';font-size:15px;font-weight:700}
+.status-icons{display:flex;gap:6px;align-items:center;font-size:14px}
+
+/* ── TOP BAR ── */
+.top-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px 12px;flex-shrink:0;
+}
+.top-bar-left{display:flex;flex-direction:column;gap:2px}
+.greeting{font-family:'Gugi';font-size:22px;color:#1a1a1a}
+.date-text{font-family:'ABeeZee';font-size:13px;color:#888}
+.top-bar-right{display:flex;align-items:center;gap:10px}
+.icon-btn{
+  width:40px;height:40px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  background:#fff;border:2px solid #e0dbd0;
+  cursor:pointer;font-size:18px;color:#444;
+  box-shadow:3px 3px 0 #d0cbc0;transition:transform 0.1s,box-shadow 0.1s;
+}
+.icon-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #d0cbc0}
+.avatar-icon{
+  width:40px;height:40px;border-radius:14px;
+  background:#fff;border:2px solid #e0dbd0;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:3px 3px 0 #d0cbc0;cursor:pointer;
+  transition:transform 0.1s,box-shadow 0.1s;
+}
+.avatar-icon:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #d0cbc0}
+
+/* ── CARDS ── */
+.card{
+  background:#fff;border-radius:24px;
+  border:2px solid #1a1a1a;
+  box-shadow:5px 5px 0 #1a1a1a;
+  overflow:hidden;
+  position:relative;
+}
+.card-sm{border-radius:18px;box-shadow:4px 4px 0 #1a1a1a}
+.card-mint{background:var(--mint-bg);border-color:#1a1a1a}
+.card-sky{background:var(--sky-bg)}
+.card-sun{background:#FFF8EE}
+.card-purple{background:var(--purple-bg)}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-family:'ABeeZee';font-size:17px;font-weight:700;color:#1a1a1a;padding:10px 20px 12px}
+
+/* ── BADGE ── */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:20px;
+  font-family:'ABeeZee';font-size:11px;font-weight:700;
+  border:1.5px solid #1a1a1a;
+}
+
+/* ── BUTTON ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 24px;border-radius:50px;
+  font-family:'ABeeZee';font-size:14px;font-weight:700;
+  border:2.5px solid #1a1a1a;
+  box-shadow:4px 4px 0 #1a1a1a;
+  cursor:pointer;transition:all 0.15s;
+  text-decoration:none;
+}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+.btn-dark{background:#1a1a1a;color:#fff}
+.btn-mint{background:var(--mint);color:#0a5a4e}
+.btn-sky{background:var(--sky);color:#0a3a6e}
+.btn-sun{background:var(--sun);color:#5a3a00}
+.btn-purple{background:var(--purple);color:#3a1a6e}
+
+/* FAB */
+.fab{
+  position:absolute;right:20px;bottom:24px;
+  width:54px;height:54px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;border:2.5px solid #1a1a1a;
+  box-shadow:4px 4px 0 #1a1a1a;cursor:pointer;
+  transition:all 0.15s;z-index:50;
+}
+.fab:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+
+/* ── SCREEN 1: DASHBOARD ── */
+#dashboard{background:var(--cream)}
+.hero-card{
+  margin:0 20px 20px;
+  background:#1a1a1a;border-radius:28px;
+  padding:22px;color:#fff;
+  border:2px solid #000;
+  box-shadow:5px 5px 0 #000;
+  position:relative;overflow:hidden;
+}
+.hero-title{font-family:'Gugi';font-size:16px;margin-bottom:16px;opacity:0.7}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hero-stat{background:rgba(255,255,255,0.08);border-radius:16px;padding:12px}
+.hero-stat-val{font-family:'Gugi';font-size:22px;color:#fff}
+.hero-stat-lbl{font-family:'ABeeZee';font-size:11px;opacity:0.6;margin-top:2px}
+
+.dash-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 20px 20px}
+.dash-card{
+  border-radius:22px;padding:16px;
+  border:2px solid #1a1a1a;
+  box-shadow:4px 4px 0 #1a1a1a;
+  position:relative;overflow:hidden;cursor:pointer;
+  transition:transform 0.15s,box-shadow 0.15s;
+}
+.dash-card:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+.dash-card-icon{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:10px;
+  border:2px solid rgba(0,0,0,0.15);
+}
+.dash-card-title{font-family:'ABeeZee';font-size:13px;font-weight:700;color:#1a1a1a}
+.dash-card-sub{font-family:'Roboto';font-size:11px;color:#666;margin-top:3px}
+
+.score-card{
+  margin:0 20px 20px;padding:20px;
+  background:linear-gradient(135deg,#1a1a1a 0%,#2d2d3a 100%);
+  border-radius:24px;border:2px solid #000;
+  box-shadow:5px 5px 0 rgba(0,0,0,0.3);
+  color:#fff;
+}
+.score-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.score-title{font-family:'Gugi';font-size:15px}
+.score-pts{font-family:'Gugi';font-size:28px;color:#FFD66B}
+.score-bars-wrap{position:relative}
+.score-guide-lines{
+  position:absolute;top:0;left:0;right:0;bottom:20px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  pointer-events:none;
+}
+.score-guide-line{
+  width:100%;height:1px;
+  background:rgba(255,255,255,0.07);
+}
+/* Score line graph */
+.score-graph-wrap{position:relative;margin-top:4px}
+.score-graph-svg{width:100%;display:block;overflow:visible}
+.score-line{
+  fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:1000;stroke-dashoffset:1000;
+  transition:stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1);
+}
+.score-line.animated{stroke-dashoffset:0}
+.score-area{opacity:0;transition:opacity 0.8s ease 0.3s}
+.score-area.animated{opacity:1}
+.score-dot{
+  transition:r 0.2s,opacity 0.3s;cursor:pointer;
+}
+.score-graph-days{display:flex;justify-content:space-between;margin-top:4px;font-family:'ABeeZee';font-size:9px;color:rgba(255,255,255,0.45);padding:0 2px}
+.score-days{display:flex;gap:7px;margin-top:6px;font-family:'ABeeZee';font-size:9px;color:rgba(255,255,255,0.45);text-align:center}
+.score-days span{flex:1}
+.streak-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,211,107,0.15);border-radius:20px;
+  padding:6px 12px;border:1px solid rgba(255,211,107,0.3);
+  font-family:'ABeeZee';font-size:12px;color:#FFD66B;
+  margin-top:6px;
+}
+
+.rec-scroll{display:flex;gap:12px;padding:0 20px 16px;overflow-x:auto;scrollbar-width:none}
+.rec-scroll::-webkit-scrollbar{display:none}
+.rec-card{
+  flex-shrink:0;width:148px;border-radius:20px;
+  background:#fff;border:2px solid #1a1a1a;
+  box-shadow:4px 4px 0 #1a1a1a;padding:14px;
+  cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;
+}
+.rec-card:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+.rec-card-tag{
+  font-size:10px;font-family:'ABeeZee';font-weight:700;
+  padding:3px 8px;border-radius:10px;margin-bottom:8px;
+  display:inline-block;border:1.5px solid #1a1a1a;
+}
+.rec-card-title{font-family:'ABeeZee';font-size:13px;font-weight:700;color:#1a1a1a;line-height:1.3}
+.rec-card-meta{font-family:'Roboto';font-size:11px;color:#888;margin-top:4px}
+
+/* ── SIDEBAR ── */
+.sidebar-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,0.5);
+  z-index:200;opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+.sidebar-overlay.open{opacity:1;pointer-events:all}
+.sidebar{
+  position:absolute;top:0;left:0;bottom:0;width:280px;
+  background:var(--cream);border-right:3px solid #1a1a1a;
+  box-shadow:6px 0 0 rgba(0,0,0,0.1);
+  z-index:201;transform:translateX(-100%);
+  transition:transform 0.35s cubic-bezier(0.34,1.2,0.64,1);
+  display:flex;flex-direction:column;padding:48px 24px 32px;
+}
+.sidebar.open{transform:translateX(0)}
+.sidebar-logo{font-family:'Gugi';font-size:28px;color:#1a1a1a;margin-bottom:8px}
+.sidebar-sub{font-family:'ABeeZee';font-size:12px;color:#888;margin-bottom:32px}
+.sidebar-item{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border-radius:18px;margin-bottom:8px;
+  border:2px solid transparent;cursor:pointer;
+  transition:all 0.2s;font-family:'ABeeZee';font-size:15px;font-weight:700;
+}
+.sidebar-item:hover{border-color:#1a1a1a;box-shadow:3px 3px 0 #1a1a1a}
+.sidebar-icon{
+  width:38px;height:38px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;border:2px solid rgba(0,0,0,0.15);
+}
+.si-events{background:var(--mint-bg);color:#0a5a4e}
+.si-academics{background:var(--sky-bg);color:#0a3a6e}
+.si-clubs{background:#FFF8EE;color:#5a3a00}
+.si-achieve{background:var(--purple-bg);color:#3a1a6e}
+.si-profile{background:#f0f0f0;color:#333}
+
+/* ── SCREEN 2: EVENTS ── */
+#events{background:var(--mint-bg)}
+#events .status-bar{color:#1a1a1a}
+.page-title{font-family:'Gugi';font-size:26px;color:#1a1a1a;padding:0 20px 12px}
+.search-bar{
+  margin:0 20px 16px;
+  background:#fff;border-radius:50px;
+  border:2px solid #e0dbd0;
+  box-shadow:none;
+  display:flex;align-items:center;gap:10px;padding:11px 18px;
+}
+.search-bar input{
+  border:none;outline:none;background:transparent;
+  font-family:'Roboto';font-size:14px;flex:1;color:#1a1a1a;
+}
+.search-bar i{font-size:18px;color:#888}
+.filter-scroll{display:flex;gap:8px;padding:0 20px 14px;overflow-x:auto;scrollbar-width:none}
+.filter-scroll::-webkit-scrollbar{display:none}
+.filter-chip{
+  flex-shrink:0;padding:8px 16px;border-radius:50px;
+  font-family:'ABeeZee';font-size:12px;font-weight:700;
+  border:2px solid #1a1a1a;background:#fff;cursor:pointer;
+  box-shadow:3px 3px 0 #1a1a1a;transition:all 0.15s;white-space:nowrap;
+  color:#1a1a1a;
+}
+.filter-chip.active,.filter-chip:hover{background:var(--mint);color:#0a5a4e;box-shadow:3px 3px 0 #0a5a4e;border-color:#0a5a4e}
+.filter-chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #0a5a4e}
+
+.featured-event{
+  margin:0 20px 24px;border-radius:24px;
+  background:linear-gradient(135deg,#0a5a4e,#1a8a7a);
+  border:2.5px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;
+  padding:24px;color:#fff;position:relative;overflow:hidden;
+}
+.feat-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:#74DCC6;color:#0a5a4e;
+  padding:4px 12px;border-radius:20px;
+  font-family:'ABeeZee';font-size:11px;font-weight:700;
+  border:1.5px solid rgba(0,0,0,0.2);margin-bottom:12px;
+}
+.feat-title{font-family:'Gugi';font-size:20px;margin-bottom:8px;line-height:1.2}
+.feat-meta{font-family:'ABeeZee';font-size:12px;opacity:0.8;display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.feat-prize{
+  background:rgba(255,211,107,0.2);
+  border-radius:12px;padding:8px 14px;
+  border:1px solid rgba(255,211,107,0.4);
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'ABeeZee';font-size:13px;font-weight:700;color:#FFD66B;
+}
+
+.event-card-h{
+  display:flex;gap:12px;
+  background:#fff;border-radius:20px;
+  border:2px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;
+  padding:16px;margin:0 20px 14px;cursor:pointer;
+  transition:transform 0.15s,box-shadow 0.15s;position:relative;
+}
+.event-card-h:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+.event-thumb{
+  width:72px;height:72px;border-radius:16px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;border:2px solid rgba(0,0,0,0.1);
+  position:relative;
+}
+.event-thumb-mint{background:var(--mint-bg)}
+.event-thumb-sky{background:var(--sky-bg)}
+.event-thumb-sun{background:#FFF8EE}
+.event-thumb-purple{background:var(--purple-bg)}
+.trending-badge{
+  position:absolute;top:-6px;right:-6px;
+  background:#FF4757;color:#fff;
+  font-size:9px;font-family:'ABeeZee';font-weight:700;
+  padding:2px 6px;border-radius:10px;border:1.5px solid #fff;
+}
+.event-info{flex:1;min-width:0}
+.event-title{font-family:'ABeeZee';font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.event-meta{font-family:'Roboto';font-size:11px;color:#888;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.event-desc{font-family:'Roboto';font-size:11px;color:#666;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.event-status{
+  display:inline-flex;align-items:center;gap:4px;
+  background:#dcfce7;color:#15803d;
+  font-size:10px;font-family:'ABeeZee';font-weight:700;
+  padding:3px 8px;border-radius:8px;margin-top:4px;border:1.5px solid #1a1a1a;
+}
+
+/* ── SCREEN 3: EVENT DETAIL ── */
+#event-detail{background:var(--mint-bg)}
+.event-hero-actions{
+  position:absolute;top:52px;right:16px;
+  display:flex;gap:8px;
+}
+.event-hero-action{
+  width:38px;height:38px;border-radius:12px;
+  background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#fff;border:1.5px solid rgba(255,255,255,0.3);cursor:pointer;
+}
+.event-hero-icon{
+  position:absolute;bottom:-30px;left:20px;
+  width:60px;height:60px;border-radius:20px;
+  background:#fff;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  z-index:6;
+}
+.detail-body{padding:40px 20px 20px}
+.detail-title{font-family:'Gugi';font-size:22px;color:#1a1a1a;margin-bottom:6px}
+.detail-org{font-family:'ABeeZee';font-size:13px;color:#666;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.detail-info-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.detail-info-pill{
+  display:flex;align-items:center;gap:6px;
+  background:#fff;border-radius:50px;
+  padding:8px 14px;border:2px solid #1a1a1a;
+  box-shadow:3px 3px 0 #1a1a1a;
+  font-family:'Roboto';font-size:12px;color:#444;
+}
+.eligibility-card{
+  background:#fff;border-radius:20px;border:2px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;
+  padding:16px;margin-bottom:14px;
+  display:flex;align-items:center;gap:14px;
+}
+.elig-icon{
+  width:48px;height:48px;border-radius:16px;
+  background:#dcfce7;border:2px solid #1a1a1a;
+  display:flex;align-items:center;justify-content:center;font-size:22px;color:#15803d;
+}
+.rewards-row{display:flex;gap:10px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.rewards-row::-webkit-scrollbar{display:none}
+.reward-pill{
+  flex-shrink:0;background:#fff;border-radius:16px;
+  border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;
+  padding:12px;text-align:center;min-width:80px;
+}
+.reward-icon{font-size:22px;margin-bottom:4px}
+.reward-val{font-family:'Gugi';font-size:16px;color:#1a1a1a}
+.reward-lbl{font-family:'Roboto';font-size:10px;color:#888}
+.detail-section{margin-bottom:16px}
+.detail-sec-title{font-family:'ABeeZee';font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
+.detail-sec-content{font-family:'Roboto';font-size:13px;color:#555;line-height:1.6}
+.register-bar{
+  flex-shrink:0;
+  padding:16px 20px 20px;
+  background:var(--mint-bg);
+  border-top:2px solid #e0dbd0;
+}
+.register-fab{
+  width:100%;
+  background:#74DCC6;color:#0a5a4e;
+  font-family:'ABeeZee';font-size:15px;font-weight:700;
+  padding:16px 24px;border-radius:18px;
+  border:2.5px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all 0.15s;white-space:nowrap;
+}
+.register-fab:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+
+/* ── SCREEN 4: ACADEMICS ── */
+#academics{background:var(--sky-bg)}
+.timetable-tabs{
+  display:flex;gap:8px;padding:0 20px 16px;
+}
+.tt-tab{
+  flex:1;padding:10px;border-radius:14px;
+  font-family:'ABeeZee';font-size:12px;font-weight:700;
+  border:2px solid #1a1a1a;background:#fff;cursor:pointer;
+  box-shadow:3px 3px 0 #1a1a1a;text-align:center;
+  transition:all 0.15s;color:#1a1a1a;
+}
+.tt-tab.active,.tt-tab:hover{background:#3b82f6;color:#fff;border-color:#1e40af;box-shadow:3px 3px 0 #1e40af}
+.tt-tab:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1e40af}
+.timetable-wrap{
+  margin:0 20px 20px;border-radius:20px;
+  background:#fff;border:2px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;
+  overflow:hidden;
+}
+.timetable-wrap table{width:100%;border-collapse:collapse;table-layout:fixed}
+.timetable-wrap th{
+  background:#3b82f6;color:#fff;
+  font-family:'ABeeZee';font-size:11px;font-weight:700;
+  padding:10px 6px;text-align:center;border-bottom:2px solid #1a1a1a;
+}
+.timetable-wrap td{
+  font-family:'Roboto';font-size:11px;color:#444;
+  padding:8px 6px;text-align:center;
+  border-bottom:1px solid #e8e8e0;vertical-align:middle;
+  line-height:1.3;
+}
+.timetable-wrap tr:last-child td{border-bottom:none}
+.timetable-wrap tr:nth-child(even) td{background:rgba(59,130,246,0.04)}
+.tt-cell-subject{
+  font-weight:700;font-size:11px;
+  padding:4px 6px;border-radius:8px;
+  display:inline-block;font-family:'ABeeZee';
+}
+.tt-cs{background:rgba(120,183,255,0.2);color:#0a3a6e}
+.tt-math{background:rgba(116,220,198,0.2);color:#0a5a4e}
+.tt-phy{background:rgba(255,179,71,0.2);color:#5a3a00}
+.tt-chem{background:rgba(167,139,250,0.2);color:#3a1a6e}
+.tt-lab{background:rgba(255,71,87,0.15);color:#8a0010}
+.tt-free{color:#aaa;font-style:italic}
+.tt-time{font-size:10px;color:#888;font-family:'Roboto'}
+
+.notice-card{
+  display:flex;align-items:flex-start;gap:12px;
+  margin:0 20px 12px;background:#fff;border-radius:16px;
+  border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;padding:16px;
+}
+.notice-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.notice-text{font-family:'Roboto';font-size:12px;color:#444;line-height:1.5}
+.notice-date{font-family:'ABeeZee';font-size:10px;color:#888;margin-top:3px}
+
+.assignment-card{
+  margin:0 20px 12px;background:#fff;border-radius:16px;
+  border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;padding:16px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.asgn-left{flex:1}
+.asgn-title{font-family:'ABeeZee';font-size:13px;font-weight:700;color:#1a1a1a}
+.asgn-sub{font-family:'Roboto';font-size:11px;color:#888;margin-top:2px}
+.asgn-due{
+  background:rgba(255,71,87,0.1);color:#c0001a;
+  padding:5px 10px;border-radius:10px;border:1.5px solid #1a1a1a;
+  font-family:'ABeeZee';font-size:10px;font-weight:700;text-align:right;
+}
+.asgn-due.ok{background:rgba(116,220,198,0.15);color:#0a5a4e}
+
+.attend-card{
+  margin:0 20px 0;background:#fff;border-radius:20px;
+  border:2px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:16px;
+}
+.attend-bars{display:flex;gap:6px;align-items:flex-end;height:60px;margin-top:10px}
+.attend-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.attend-bar-bg{width:100%;height:56px;background:#f0f0f0;border-radius:8px;position:relative;overflow:hidden}
+.attend-bar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:8px;transition:height 1.2s cubic-bezier(0.34,1.2,0.64,1)}
+.attend-lbl{font-size:9px;font-family:'ABeeZee';color:#888}
+
+/* ── SCREEN 5: CLUBS ── */
+#clubs{background:var(--sun-bg)}
+.club-card{
+  background:#fff;border-radius:20px;border:2px solid #1a1a1a;
+  box-shadow:4px 4px 0 #1a1a1a;padding:18px;margin:0 20px 14px;
+  cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;
+}
+.club-card:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+.club-header{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.club-logo{
+  width:48px;height:48px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;border:2px solid rgba(0,0,0,0.1);flex-shrink:0;
+}
+.club-name{font-family:'ABeeZee';font-size:14px;font-weight:700;color:#1a1a1a}
+.club-desc{font-family:'Roboto';font-size:12px;color:#666;margin-bottom:8px;line-height:1.4}
+.club-footer{display:flex;justify-content:space-between;align-items:center}
+.club-members{font-family:'ABeeZee';font-size:11px;color:#888;display:flex;align-items:center;gap:4px}
+.join-btn{
+  padding:7px 16px;border-radius:50px;
+  font-family:'ABeeZee';font-size:11px;font-weight:700;
+  border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;
+  cursor:pointer;background:var(--mint);color:#0a5a4e;
+  transition:all 0.15s;
+}
+.join-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1a1a1a}
+.join-btn.joined{background:#FFD66B;color:#5a3a00;border-color:#1a1a1a}
+
+.feed-card{
+  background:#fff;border-radius:20px;border:2px solid #1a1a1a;
+  box-shadow:4px 4px 0 #1a1a1a;padding:18px;margin:0 20px 16px;
+  overflow:hidden;position:relative;
+}
+.feed-club-banner{
+  height:4px;border-radius:4px 4px 0 0;
+  position:absolute;top:0;left:0;right:0;
+}
+.feed-user{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-top:4px}
+.feed-avatar{
+  width:40px;height:40px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;border:2px solid rgba(0,0,0,0.1);flex-shrink:0;
+}
+.feed-name{font-family:'ABeeZee';font-size:13px;font-weight:700;color:#1a1a1a}
+.feed-time{font-family:'Roboto';font-size:11px;color:#888}
+.feed-content{font-family:'Roboto';font-size:13px;color:#444;line-height:1.5;margin-bottom:12px}
+.feed-highlight{
+  background:linear-gradient(135deg,rgba(116,220,198,0.12),rgba(120,183,255,0.1));
+  border-radius:12px;padding:10px 14px;border:1.5px solid rgba(116,220,198,0.3);
+  font-family:'Roboto';font-size:12px;color:#0a5a4e;line-height:1.5;margin-bottom:12px;
+  display:flex;align-items:flex-start;gap:8px;
+}
+.feed-actions{display:flex;gap:0;border-top:1px solid #f0ece4;padding-top:10px}
+.feed-action{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+  font-family:'ABeeZee';font-size:11px;font-weight:700;color:#666;cursor:pointer;
+  padding:4px 0;border-radius:8px;transition:background 0.15s;
+}
+.feed-action:hover{background:rgba(0,0,0,0.04)}
+.feed-action i{font-size:16px}
+.feed-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:20px;
+  font-family:'ABeeZee';font-size:10px;font-weight:700;
+  margin-bottom:8px;border:1.5px solid #1a1a1a;
+}
+
+/* ── SCREEN 6: PROFILE ── */
+#profile{background:#f3f0ff}
+.profile-hero{
+  background:linear-gradient(135deg,#4c1d95,#6d28d9);
+  padding:56px 20px 36px;color:#fff;
+  border-bottom:3px solid #1a1a1a;
+  position:relative;overflow:hidden;
+}
+.profile-top{display:flex;align-items:center;gap:16px;position:relative;z-index:1;margin-bottom:24px}
+.profile-pic{
+  width:76px;height:76px;border-radius:50%;
+  background:linear-gradient(135deg,#c4b5fd,#a5f3fc);
+  border:4px solid #fff;box-shadow:4px 4px 0 rgba(0,0,0,0.3);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.profile-name{font-family:'Gugi';font-size:22px;margin-bottom:2px}
+.profile-dept{font-family:'ABeeZee';font-size:13px;opacity:0.8}
+.profile-year{font-family:'Roboto';font-size:12px;opacity:0.6;margin-top:2px}
+.level-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,211,107,0.25);border-radius:20px;
+  padding:6px 14px;border:1.5px solid rgba(255,211,107,0.5);
+  font-family:'ABeeZee';font-size:12px;font-weight:700;color:#FFD66B;
+}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative;z-index:1}
+.stat-box{text-align:center}
+.stat-num{font-family:'Gugi';font-size:20px;color:#fff}
+.stat-lbl{font-family:'Roboto';font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px}
+
+.badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 20px 24px}
+.badge-item{
+  background:#fff;border-radius:20px;border:2px solid #1a1a1a;
+  box-shadow:4px 4px 0 #1a1a1a;padding:16px 12px;
+  text-align:center;cursor:pointer;
+  transition:transform 0.15s,box-shadow 0.15s;
+}
+.badge-item:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+.badge-icon{font-size:30px;margin-bottom:6px}
+.badge-name{font-family:'ABeeZee';font-size:11px;font-weight:700;color:#1a1a1a;line-height:1.2}
+.badge-xp{font-family:'Roboto';font-size:10px;color:#888;margin-top:2px}
+
+.timeline-card{
+  margin:0 20px 24px;background:#fff;border-radius:20px;
+  border:2px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:20px;
+}
+.timeline-item{
+  display:flex;gap:0;position:relative;
+  padding-bottom:20px;
+}
+.timeline-item:last-child{padding-bottom:0}
+.tl-left{
+  display:flex;flex-direction:column;align-items:center;
+  width:40px;flex-shrink:0;margin-right:14px;
+}
+.tl-dot{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;border:2px solid rgba(0,0,0,0.15);
+  position:relative;z-index:1;
+}
+.tl-line{
+  width:2px;flex:1;background:linear-gradient(to bottom,rgba(0,0,0,0.15),rgba(0,0,0,0.05));
+  margin-top:4px;min-height:16px;
+}
+.timeline-item:last-child .tl-line{display:none}
+.tl-content{flex:1;padding-top:6px}
+.tl-title{font-family:'ABeeZee';font-size:13px;font-weight:700;color:#1a1a1a}
+.tl-date{font-family:'Roboto';font-size:11px;color:#888;margin-top:2px}
+
+.profile-btns{display:flex;gap:12px;margin:0 20px 32px;flex-wrap:wrap}
+
+/* Clubs-specific filter chips override */
+#clubs .filter-chip.active,#clubs .filter-chip:hover{background:var(--sun);color:#5a3a00;box-shadow:3px 3px 0 #8a5a00;border-color:#8a5a00}
+#clubs .filter-chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #8a5a00}
+
+/* ── PAGE ENTRANCE ANIMATIONS ── */
+.fade-up{opacity:0;transform:translateY(16px);transition:opacity 0.4s,transform 0.4s}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+
+/* ── LOADING BAR ── */
+.loading-bar{
+  position:absolute;bottom:0;left:0;height:3px;
+  background:var(--mint);transition:width 0.3s;z-index:300;
+}
+
+/* ── PREMIUM POLISH ── */
+
+/* Premium bottom nav - colored active pill */
+.nav-item.active .nav-icon{
+  background:#1a1a1a;color:#fff;
+  box-shadow:2px 2px 0 rgba(0,0,0,0.2);
+}
+
+/* Smooth card hover lifts - dash and event only */
+.dash-card:hover{transform:translate(-1px,-2px);box-shadow:6px 7px 0 #1a1a1a}
+.event-card-h:hover{transform:translate(-1px,-2px);box-shadow:6px 7px 0 #1a1a1a}
+
+/* Profile hero shimmer */
+.profile-hero::before{
+  content:'';position:absolute;
+  top:-60px;right:-40px;width:200px;height:200px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(167,139,250,0.3) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+.profile-hero::after{
+  content:'';position:absolute;
+  bottom:-40px;left:-20px;width:160px;height:160px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(116,220,198,0.2) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+/* Tighter rec-scroll bottom spacing */
+.rec-scroll{padding-bottom:4px}
+
+/* Events page - back button area spacing */
+#events .scroll-body > *:first-child{margin-top:4px}
+
+/* Attend card bottom margin */
+.attend-card{margin-bottom:32px}
+
+/* Better score card border */
+.score-card{border:2px solid rgba(255,255,255,0.08)}
+
+/* Profile stat separator */
+.stats-row{border-top:1px solid rgba(255,255,255,0.12);padding-top:20px;margin-top:4px}
+
+/* Event detail body bigger spacing */
+.detail-section{margin-bottom:20px}
+.detail-sec-title{margin-bottom:10px}
+
+/* Better feed highlight */
+.feed-highlight{margin-bottom:14px}
+
+/* Profile XP bar micro-animation */
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 0 0 rgba(116,220,198,0)}
+  50%{box-shadow:0 0 0 4px rgba(116,220,198,0.15)}
+}
+.score-card:hover .streak-pill{animation:pulse-glow 2s ease infinite}
+
+</style>
+</head>
+<body>
+
+<div class="phone-wrap">
+  <div class="grain"></div>
+
+  <!-- ════════════════════ SPLASH ════════════════════ -->
+  <div class="screen active" id="splash">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0">
+      <div class="splash-inner" id="splashInner">
+        <div class="orbit-ring"></div>
+        <div class="orbit-ring"></div>
+        <div class="orbit-ring"></div>
+        <div class="orbit-ring"></div>
+        <div class="orbit-logo-text" id="splashLogoText">ORBIT</div>
+        <div class="orbit-tagline" id="splashTagline">your campus, in orbit</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ DASHBOARD ════════════════════ -->
+  <div class="screen" id="dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-logo">ORBIT</div>
+      <div class="sidebar-sub">campus super-app</div>
+      <div class="sidebar-item" style="background:rgba(255,211,107,0.12);border-color:#e0dbd0" onclick="goScreen('dashboard');closeSidebar()">
+        <div class="sidebar-icon" style="background:#FFF3E0;color:#5a3a00"><i class="ti ti-home" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Dashboard</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('events');closeSidebar()">
+        <div class="sidebar-icon si-events"><i class="ti ti-calendar-event" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Events</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('academics');closeSidebar()">
+        <div class="sidebar-icon si-academics"><i class="ti ti-book" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Academics</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('clubs');closeSidebar()">
+        <div class="sidebar-icon si-clubs"><i class="ti ti-users" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Clubs</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('profile');closeSidebar()">
+        <div class="sidebar-icon si-profile"><i class="ti ti-user-circle" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Profile</span>
+      </div>
+    </div>
+
+    <div style="background:var(--cream);flex-shrink:0">
+      <div class="status-bar" style="color:#1a1a1a">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <i class="ti ti-wifi" aria-hidden="true"></i>
+          <i class="ti ti-battery-3" aria-hidden="true"></i>
+        </div>
+      </div>
+      <div style="padding:4px 20px 14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="icon-btn" onclick="openSidebar()" aria-label="Menu"><i class="ti ti-menu-2" aria-hidden="true"></i></div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="icon-btn" aria-label="Search"><i class="ti ti-search" aria-hidden="true"></i></div>
+            <div class="icon-btn" onclick="goScreen('profile')" role="button" aria-label="Profile">
+              <i class="ti ti-user-circle" style="font-size:20px" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+        <div class="greeting">Good Morning, Alya 👋</div>
+        <div class="date-text" style="margin-top:4px">Sunday, 7 June 2026</div>
+      </div>
+    </div>
+
+    <div class="scroll-body" id="dashScroll">
+      <!-- Hero Card -->
+      <div class="hero-card fade-up">
+        <div class="hero-title">Today's Snapshot</div>
+        <div class="hero-grid">
+          <div class="hero-stat">
+            <div class="hero-stat-val">86%</div>
+            <div class="hero-stat-lbl">Attendance</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-val">DS Lab</div>
+            <div class="hero-stat-lbl">Next Class — 11:00</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-val">HackFest</div>
+            <div class="hero-stat-lbl">Next Event — 2:00 PM</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-val">3</div>
+            <div class="hero-stat-lbl">New Updates</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Dash Cards -->
+      <div class="dash-cards fade-up">
+        <div class="dash-card" style="background:var(--mint-bg)" onclick="goScreen('events')">
+          <div class="dash-card-icon" style="background:#e0fdf7;color:#0a5a4e"><i class="ti ti-calendar-event" aria-hidden="true"></i></div>
+          <div class="dash-card-title">Events</div>
+          <div class="dash-card-sub">8 this week</div>
+        </div>
+        <div class="dash-card" style="background:var(--sky-bg)" onclick="goScreen('academics')">
+          <div class="dash-card-icon" style="background:#dbeafe;color:#0a3a6e"><i class="ti ti-book-2" aria-hidden="true"></i></div>
+          <div class="dash-card-title">Academics</div>
+          <div class="dash-card-sub">2 assignments due</div>
+        </div>
+        <div class="dash-card" style="background:#FFF8EE" onclick="goScreen('clubs')">
+          <div class="dash-card-icon" style="background:#fef9c3;color:#5a3a00"><i class="ti ti-users-group" aria-hidden="true"></i></div>
+          <div class="dash-card-title">Clubs</div>
+          <div class="dash-card-sub">3 joined</div>
+        </div>
+        <div class="dash-card" style="background:var(--purple-bg)" onclick="goScreen('profile')">
+          <div class="dash-card-icon" style="background:#ede9fe;color:#3a1a6e"><i class="ti ti-trophy" aria-hidden="true"></i></div>
+          <div class="dash-card-title">Achievements</div>
+          <div class="dash-card-sub">12 badges</div>
+        </div>
+      </div>
+
+      <!-- Participation Score -->
+      <div class="score-card fade-up">
+        <div class="score-row">
+          <div>
+            <div class="score-title">Participation Score</div>
+            <div class="streak-pill"><i class="ti ti-flame" style="font-size:14px" aria-hidden="true"></i>12 day streak</div>
+          </div>
+          <div>
+            <div style="font-family:'ABeeZee';font-size:11px;opacity:0.5;text-align:right;margin-bottom:2px">Total XP</div>
+            <div class="score-pts">2,840</div>
+          </div>
+        </div>
+        <div class="score-graph-wrap">
+          <!-- SVG line graph: viewBox 350x80, 7 data points -->
+          <!-- Points mapped: x evenly spaced 0..350, y inverted (0=top=100%, 80=bottom=0%) -->
+          <!-- Values: Mon70 Tue85 Wed50 Thu92 Fri65 Sat80 Sun95 -->
+          <svg class="score-graph-svg" viewBox="0 0 350 80" xmlns="http://www.w3.org/2000/svg" id="scoreGraph">
+            <defs>
+              <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#74DCC6"/>
+                <stop offset="33%" stop-color="#78B7FF"/>
+                <stop offset="66%" stop-color="#A78BFA"/>
+                <stop offset="100%" stop-color="#FFD66B"/>
+              </linearGradient>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#74DCC6" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#74DCC6" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid lines -->
+            <line x1="0" y1="20" x2="350" y2="20" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <line x1="0" y1="40" x2="350" y2="40" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <line x1="0" y1="60" x2="350" y2="60" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <!-- Area fill -->
+            <path class="score-area" id="scoreArea"
+              d="M0,24 C20,24 30,13 58,13 C86,13 98,40 116,40 C134,40 146,6.4 175,6.4 C204,6.4 216,28 233,28 C250,28 262,16 291,16 C320,16 330,4 350,4 L350,80 L0,80 Z"
+              fill="url(#areaGrad)"/>
+            <!-- Line -->
+            <path class="score-line" id="scoreLine"
+              d="M0,24 C20,24 30,13 58,13 C86,13 98,40 116,40 C134,40 146,6.4 175,6.4 C204,6.4 216,28 233,28 C250,28 262,16 291,16 C320,16 330,4 350,4"
+              stroke="url(#lineGrad)"/>
+            <!-- Dots at each data point -->
+            <circle class="score-dot" cx="0"   cy="24"  r="3" fill="#74DCC6" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+            <circle class="score-dot" cx="58"  cy="13"  r="3" fill="#78B7FF" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+            <circle class="score-dot" cx="116" cy="40"  r="3" fill="#FFB347" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+            <circle class="score-dot" cx="175" cy="6.4" r="3" fill="#A78BFA" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+            <circle class="score-dot" cx="233" cy="28"  r="3" fill="#74DCC6" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+            <circle class="score-dot" cx="291" cy="16"  r="3" fill="#78B7FF" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+            <!-- Today's dot highlighted -->
+            <circle class="score-dot" cx="350" cy="4"   r="5" fill="#FFD66B" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+          </svg>
+          <div class="score-graph-days">
+            <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommended -->
+      <div class="sec-title fade-up">Recommended For You</div>
+      <div class="rec-scroll fade-up">
+        <div class="rec-card" onclick="goScreen('events')">
+          <span class="rec-card-tag" style="background:var(--mint-bg);color:#0a5a4e">Hackathon</span>
+          <div class="rec-card-title">InnovateMIT 2026</div>
+          <div class="rec-card-meta"><i class="ti ti-calendar" style="font-size:12px" aria-hidden="true"></i> June 14</div>
+        </div>
+        <div class="rec-card">
+          <span class="rec-card-tag" style="background:var(--sky-bg);color:#0a3a6e">Workshop</span>
+          <div class="rec-card-title">ML Crash Course</div>
+          <div class="rec-card-meta"><i class="ti ti-calendar" style="font-size:12px" aria-hidden="true"></i> June 10</div>
+        </div>
+        <div class="rec-card" onclick="goScreen('clubs')">
+          <span class="rec-card-tag" style="background:#FFF8EE;color:#5a3a00">Club</span>
+          <div class="rec-card-title">Robotics Society</div>
+          <div class="rec-card-meta"><i class="ti ti-users" style="font-size:12px" aria-hidden="true"></i> 128 members</div>
+        </div>
+        <div class="rec-card">
+          <span class="rec-card-tag" style="background:var(--purple-bg);color:#3a1a6e">Competition</span>
+          <div class="rec-card-title">Code Sprint Finals</div>
+          <div class="rec-card-meta"><i class="ti ti-calendar" style="font-size:12px" aria-hidden="true"></i> June 20</div>
+        </div>
+      </div>
+      <div style="height:24px"></div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="goScreen('dashboard')">
+        <div class="nav-icon"><i class="ti ti-home" aria-hidden="true"></i></div>
+        <span class="nav-label">Home</span>
+      </div>
+      <div class="nav-item" onclick="goScreen('events')">
+        <div class="nav-icon"><i class="ti ti-calendar-event" aria-hidden="true"></i></div>
+        <span class="nav-label">Events</span>
+      </div>
+      <div class="nav-item" onclick="goScreen('academics')">
+        <div class="nav-icon"><i class="ti ti-book" aria-hidden="true"></i></div>
+        <span class="nav-label">Classes</span>
+      </div>
+      <div class="nav-item" onclick="goScreen('clubs')">
+        <div class="nav-icon"><i class="ti ti-users" aria-hidden="true"></i></div>
+        <span class="nav-label">Clubs</span>
+      </div>
+      <div class="nav-item" onclick="goScreen('profile')">
+        <div class="nav-icon"><i class="ti ti-user" aria-hidden="true"></i></div>
+        <span class="nav-label">Profile</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ EVENTS ════════════════════ -->
+  <div class="screen" id="events">
+    <div style="background:var(--mint-bg);flex-shrink:0">
+      <div class="status-bar" style="color:#1a1a1a">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <i class="ti ti-wifi" aria-hidden="true"></i><i class="ti ti-battery-3" aria-hidden="true"></i>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:0 20px 12px">
+        <div class="icon-btn" onclick="goScreen('dashboard')" aria-label="Back"><i class="ti ti-arrow-left" aria-hidden="true"></i></div>
+        <div class="page-title" style="padding:0;flex:1">Events</div>
+        <div class="icon-btn" aria-label="Notifications"><i class="ti ti-bell" aria-hidden="true"></i></div>
+      </div>
+      <div class="search-bar">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" placeholder="Search events & competitions...">
+      </div>
+      <div class="filter-scroll">
+        <div class="filter-chip active">All</div>
+        <div class="filter-chip">Hackathons</div>
+        <div class="filter-chip">Workshops</div>
+        <div class="filter-chip">Gaming</div>
+        <div class="filter-chip">Cultural</div>
+        <div class="filter-chip">Sports</div>
+        <div class="filter-chip">Tech Talks</div>
+      </div>
+    </div>
+
+    <div class="scroll-body">
+      <!-- Featured -->
+      <div class="featured-event fade-up">
+        <div class="feat-badge"><i class="ti ti-star" style="font-size:12px" aria-hidden="true"></i>Featured</div>
+        <div class="feat-title">InnovateMIT<br>Hackathon 2026</div>
+        <div class="feat-meta">
+          <span><i class="ti ti-calendar" aria-hidden="true"></i> June 14–16</span>
+          <span><i class="ti ti-map-pin" aria-hidden="true"></i> Main Auditorium</span>
+        </div>
+        <div class="feat-prize"><i class="ti ti-trophy" style="font-size:16px" aria-hidden="true"></i>Prize Pool — ₹2,00,000</div>
+        <button class="btn btn-mint" style="margin-top:14px;padding:10px 24px;font-size:13px" onclick="goScreen('event-detail')">
+          <i class="ti ti-external-link" style="font-size:15px" aria-hidden="true"></i>View Details
+        </button>
+      </div>
+
+      <!-- Trending -->
+      <div class="sec-title fade-up">Trending This Week</div>
+      <div class="event-card-h fade-up" onclick="goScreen('event-detail')">
+        <div class="event-thumb event-thumb-mint">
+          <i class="ti ti-code" style="font-size:28px;color:#0a5a4e" aria-hidden="true"></i>
+          <span class="trending-badge">🔥 Hot</span>
+        </div>
+        <div class="event-info">
+          <div class="event-title">Code Sprint Finals</div>
+          <div class="event-meta"><i class="ti ti-calendar" style="font-size:12px" aria-hidden="true"></i>June 20 &bull; 10:00 AM</div>
+          <div class="event-desc">Speed coding competition. Solve 5 algorithmic challenges in 90 mins.</div>
+          <span class="event-status"><i class="ti ti-check" style="font-size:12px" aria-hidden="true"></i>Open</span>
+        </div>
+      </div>
+      <div class="event-card-h fade-up">
+        <div class="event-thumb event-thumb-sky">
+          <i class="ti ti-brain" style="font-size:28px;color:#0a3a6e" aria-hidden="true"></i>
+          <span class="trending-badge" style="background:#5b21b6">Top 10</span>
+        </div>
+        <div class="event-info">
+          <div class="event-title">ML Crash Course</div>
+          <div class="event-meta"><i class="ti ti-calendar" style="font-size:12px" aria-hidden="true"></i>June 10 &bull; 2:00 PM</div>
+          <div class="event-desc">Hands-on ML workshop with Python. Build your first neural network.</div>
+          <span class="event-status"><i class="ti ti-check" style="font-size:12px" aria-hidden="true"></i>Open</span>
+        </div>
+      </div>
+
+      <!-- Ending Soon -->
+      <div class="sec-title fade-up">Ending Soon</div>
+      <div class="event-card-h fade-up">
+        <div class="event-thumb event-thumb-sun">
+          <i class="ti ti-music" style="font-size:28px;color:#5a3a00" aria-hidden="true"></i>
+        </div>
+        <div class="event-info">
+          <div class="event-title">Culturama 2026</div>
+          <div class="event-meta"><i class="ti ti-calendar" style="font-size:12px" aria-hidden="true"></i>June 8 &bull; 6:00 PM</div>
+          <div class="event-desc">Annual cultural fest with dance, music, drama and art competitions.</div>
+          <span class="event-status" style="background:rgba(239,68,68,0.1);color:#c0001a;border-color:#1a1a1a">
+            <i class="ti ti-clock" style="font-size:12px" aria-hidden="true"></i>1 day left
+          </span>
+        </div>
+      </div>
+      <div class="event-card-h fade-up">
+        <div class="event-thumb event-thumb-purple">
+          <i class="ti ti-device-gamepad-2" style="font-size:28px;color:#3a1a6e" aria-hidden="true"></i>
+        </div>
+        <div class="event-info">
+          <div class="event-title">Gaming League S3</div>
+          <div class="event-meta"><i class="ti ti-calendar" style="font-size:12px" aria-hidden="true"></i>June 9 &bull; 4:00 PM</div>
+          <div class="event-desc">BGMI and Valorant tournament. Form your squad and register now.</div>
+          <span class="event-status" style="background:rgba(239,68,68,0.1);color:#c0001a;border-color:#1a1a1a">
+            <i class="ti ti-clock" style="font-size:12px" aria-hidden="true"></i>2 days left
+          </span>
+        </div>
+      </div>
+      <div style="height:24px"></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('dashboard')"><div class="nav-icon"><i class="ti ti-home" aria-hidden="true"></i></div><span class="nav-label">Home</span></div>
+      <div class="nav-item active" onclick="goScreen('events')"><div class="nav-icon"><i class="ti ti-calendar-event" aria-hidden="true"></i></div><span class="nav-label">Events</span></div>
+      <div class="nav-item" onclick="goScreen('academics')"><div class="nav-icon"><i class="ti ti-book" aria-hidden="true"></i></div><span class="nav-label">Classes</span></div>
+      <div class="nav-item" onclick="goScreen('clubs')"><div class="nav-icon"><i class="ti ti-users" aria-hidden="true"></i></div><span class="nav-label">Clubs</span></div>
+      <div class="nav-item" onclick="goScreen('profile')"><div class="nav-icon"><i class="ti ti-user" aria-hidden="true"></i></div><span class="nav-label">Profile</span></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ EVENT DETAIL ════════════════════ -->
+  <div class="screen" id="event-detail">
+    <!-- Sidebar for event detail -->
+    <div class="sidebar-overlay" id="eventSidebarOverlay" onclick="closeEventSidebar()"></div>
+    <div class="sidebar" id="eventSidebar">
+      <div class="sidebar-logo">ORBIT</div>
+      <div class="sidebar-sub">campus super-app</div>
+      <div class="sidebar-item" onclick="goScreen('dashboard');closeEventSidebar()">
+        <div class="sidebar-icon" style="background:#FFF3E0;color:#5a3a00"><i class="ti ti-home" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Dashboard</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('events');closeEventSidebar()">
+        <div class="sidebar-icon si-events"><i class="ti ti-calendar-event" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Events</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('academics');closeEventSidebar()">
+        <div class="sidebar-icon si-academics"><i class="ti ti-book" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Academics</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('clubs');closeEventSidebar()">
+        <div class="sidebar-icon si-clubs"><i class="ti ti-users" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Clubs</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('profile');closeEventSidebar()">
+        <div class="sidebar-icon si-profile"><i class="ti ti-user-circle" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Profile</span>
+      </div>
+    </div>
+
+    <div class="scroll-body">
+      <!-- Banner Image Placeholder (scrolls with content) -->
+      <div style="position:relative;width:100%;height:220px;background:linear-gradient(135deg,#0a5a4e,#1a8a7a,#74DCC6);flex-shrink:0;">
+        <div style="position:absolute;inset:0;overflow:hidden">
+          <!-- Banner placeholder text -->
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0.4">
+            <i class="ti ti-photo" style="font-size:40px;color:#fff" aria-hidden="true"></i>
+            <div style="font-family:'ABeeZee';font-size:12px;color:#fff;letter-spacing:1px">Banner Image</div>
+          </div>
+        </div>
+        <div class="status-bar" style="color:#fff;position:absolute;top:0;left:0;right:0;z-index:5">
+          <span class="status-time">9:41</span>
+          <div class="status-icons"><i class="ti ti-wifi" aria-hidden="true"></i><i class="ti ti-battery-3" aria-hidden="true"></i></div>
+        </div>
+        <!-- Menu button top-left -->
+        <div style="position:absolute;top:52px;left:16px;z-index:10">
+          <div class="icon-btn" style="background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.3);color:#fff;box-shadow:none" onclick="openEventSidebar()" aria-label="Menu">
+            <i class="ti ti-menu-2" aria-hidden="true"></i>
+          </div>
+        </div>
+        <div class="event-hero-actions" style="top:52px">
+          <div class="event-hero-action"><i class="ti ti-bookmark" aria-hidden="true"></i></div>
+          <div class="event-hero-action"><i class="ti ti-share" aria-hidden="true"></i></div>
+        </div>
+        <div class="event-hero-icon">
+          <i class="ti ti-code" style="font-size:28px;color:#0a5a4e" aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <div class="detail-title">InnovateMIT Hackathon 2026</div>
+        <div class="detail-org"><i class="ti ti-building" style="font-size:14px" aria-hidden="true"></i>MIT Innovation Cell</div>
+
+        <div class="detail-info-row">
+          <div class="detail-info-pill"><i class="ti ti-calendar" style="font-size:15px;color:#74DCC6" aria-hidden="true"></i>June 14–16</div>
+          <div class="detail-info-pill"><i class="ti ti-map-pin" style="font-size:15px;color:#74DCC6" aria-hidden="true"></i>Main Auditorium</div>
+        </div>
+        <div class="detail-info-row">
+          <div class="detail-info-pill"><i class="ti ti-users" style="font-size:15px;color:#A78BFA" aria-hidden="true"></i>248 registered</div>
+          <div class="detail-info-pill"><i class="ti ti-clock" style="font-size:15px;color:#FF4757" aria-hidden="true"></i>Deadline: June 12</div>
+        </div>
+
+        <!-- Eligibility -->
+        <div class="eligibility-card fade-up">
+          <div class="elig-icon"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
+          <div>
+            <div style="font-family:'ABeeZee';font-size:14px;font-weight:700;color:#1a1a1a">You're Eligible!</div>
+            <div style="font-family:'Roboto';font-size:12px;color:#666;margin-top:2px">Open to all UG students (1st–4th year)</div>
+          </div>
+        </div>
+
+        <!-- Rewards -->
+        <div class="sec-title" style="padding:0 0 10px">Rewards</div>
+        <div class="rewards-row fade-up">
+          <div class="reward-pill">
+            <div class="reward-icon" style="color:#FFB347"><i class="ti ti-medal" style="font-size:22px" aria-hidden="true"></i></div>
+            <div class="reward-val">Badge</div>
+            <div class="reward-lbl">Hacker</div>
+          </div>
+          <div class="reward-pill">
+            <div class="reward-icon" style="color:#A78BFA"><i class="ti ti-star" style="font-size:22px" aria-hidden="true"></i></div>
+            <div class="reward-val">+500</div>
+            <div class="reward-lbl">XP Points</div>
+          </div>
+          <div class="reward-pill">
+            <div class="reward-icon" style="color:#78B7FF"><i class="ti ti-certificate" style="font-size:22px" aria-hidden="true"></i></div>
+            <div class="reward-val">Cert</div>
+            <div class="reward-lbl">Certificate</div>
+          </div>
+          <div class="reward-pill">
+            <div class="reward-icon" style="color:#74DCC6"><i class="ti ti-lock-open" style="font-size:22px" aria-hidden="true"></i></div>
+            <div class="reward-val">3</div>
+            <div class="reward-lbl">Unlocks</div>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="detail-section fade-up">
+          <div class="detail-sec-title">About Event</div>
+          <div class="detail-sec-content">InnovateMIT is MIT's flagship 48-hour hackathon. Teams of 2–4 build innovative solutions to real-world problems. This year's theme is <strong>Sustainable Cities.</strong></div>
+        </div>
+
+        <!-- Schedule -->
+        <div class="detail-section fade-up">
+          <div class="detail-sec-title">Schedule</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:52px;font-family:'ABeeZee';font-size:11px;color:#888;flex-shrink:0">Day 1</div>
+              <div style="flex:1;background:#fff;border-radius:12px;border:1.5px solid #e0dbd0;padding:10px 14px">
+                <div style="font-family:'ABeeZee';font-size:13px;font-weight:700;color:#1a1a1a">Opening Ceremony + Ideation</div>
+                <div style="font-family:'Roboto';font-size:11px;color:#888;margin-top:2px">9:00 AM — 8:00 PM</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:52px;font-family:'ABeeZee';font-size:11px;color:#888;flex-shrink:0">Day 2</div>
+              <div style="flex:1;background:#fff;border-radius:12px;border:1.5px solid #e0dbd0;padding:10px 14px">
+                <div style="font-family:'ABeeZee';font-size:13px;font-weight:700;color:#1a1a1a">Build + Mentorship Sessions</div>
+                <div style="font-family:'Roboto';font-size:11px;color:#888;margin-top:2px">All day + overnight</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:52px;font-family:'ABeeZee';font-size:11px;color:#888;flex-shrink:0">Day 3</div>
+              <div style="flex:1;background:#fff;border-radius:12px;border:1.5px solid #e0dbd0;padding:10px 14px">
+                <div style="font-family:'ABeeZee';font-size:13px;font-weight:700;color:#1a1a1a">Demo Day + Judging + Awards</div>
+                <div style="font-family:'Roboto';font-size:11px;color:#888;margin-top:2px">9:00 AM — 5:00 PM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rules -->
+        <div class="detail-section fade-up">
+          <div class="detail-sec-title">Rules</div>
+          <div class="detail-sec-content">
+            Teams of 2–4 members. All code must be written during the hackathon. Open source libraries allowed. Projects must be original. Judges' decision is final.
+          </div>
+        </div>
+
+        <div style="height:24px"></div>
+      </div>
+    </div>
+
+    <div class="register-bar">
+      <button class="register-fab" aria-label="Register Now">
+        <i class="ti ti-rocket" style="font-size:18px" aria-hidden="true"></i>Register Now
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════ ACADEMICS ════════════════════ -->
+  <div class="screen" id="academics">
+    <!-- Sidebar for academics -->
+    <div class="sidebar-overlay" id="academicsSidebarOverlay" onclick="closeAcademicsSidebar()"></div>
+    <div class="sidebar" id="academicsSidebar">
+      <div class="sidebar-logo">ORBIT</div>
+      <div class="sidebar-sub">campus super-app</div>
+      <div class="sidebar-item" onclick="goScreen('dashboard');closeAcademicsSidebar()">
+        <div class="sidebar-icon" style="background:#FFF3E0;color:#5a3a00"><i class="ti ti-home" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Dashboard</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('events');closeAcademicsSidebar()">
+        <div class="sidebar-icon si-events"><i class="ti ti-calendar-event" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Events</span>
+      </div>
+      <div class="sidebar-item" style="background:rgba(59,130,246,0.08);border-color:#e0dbd0" onclick="goScreen('academics');closeAcademicsSidebar()">
+        <div class="sidebar-icon si-academics"><i class="ti ti-book" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Academics</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('clubs');closeAcademicsSidebar()">
+        <div class="sidebar-icon si-clubs"><i class="ti ti-users" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Clubs</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('profile');closeAcademicsSidebar()">
+        <div class="sidebar-icon si-profile"><i class="ti ti-user-circle" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Profile</span>
+      </div>
+    </div>
+
+    <div style="background:var(--sky-bg);flex-shrink:0">
+      <div class="status-bar" style="color:#1a1a1a">
+        <span class="status-time">9:41</span>
+        <div class="status-icons"><i class="ti ti-wifi" aria-hidden="true"></i><i class="ti ti-battery-3" aria-hidden="true"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:0 20px 12px">
+        <div class="icon-btn" onclick="openAcademicsSidebar()" aria-label="Menu"><i class="ti ti-menu-2" aria-hidden="true"></i></div>
+        <div class="page-title" style="padding:0;flex:1">Academics</div>
+        <div class="icon-btn" aria-label="Search"><i class="ti ti-search" aria-hidden="true"></i></div>
+      </div>
+    </div>
+
+    <div class="scroll-body">
+      <!-- Academic Overview -->
+      <div style="margin:0 20px 20px" class="fade-up">
+        <div style="background:linear-gradient(135deg,#1e40af,#3b82f6);border-radius:22px;padding:20px;border:2px solid #1a1a1a;box-shadow:none;color:#fff">
+          <div style="font-family:'Gugi';font-size:15px;margin-bottom:16px;opacity:0.8">Academic Overview</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div style="text-align:center;background:rgba(255,255,255,0.12);border-radius:14px;padding:12px 8px">
+              <div style="font-family:'Gugi';font-size:26px;color:#fff">8.6</div>
+              <div style="font-family:'ABeeZee';font-size:10px;opacity:0.7;margin-top:4px">CGPA</div>
+            </div>
+            <div style="text-align:center;background:rgba(255,255,255,0.12);border-radius:14px;padding:12px 8px">
+              <div style="font-family:'Gugi';font-size:26px;color:#fff">86%</div>
+              <div style="font-family:'ABeeZee';font-size:10px;opacity:0.7;margin-top:4px">Attendance</div>
+            </div>
+            <div style="text-align:center;background:rgba(255,255,255,0.12);border-radius:14px;padding:12px 8px">
+              <div style="font-family:'Gugi';font-size:22px;color:#fff">Sem 4</div>
+              <div style="font-family:'ABeeZee';font-size:10px;opacity:0.7;margin-top:4px">Current</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timetable Tabs -->
+      <div class="timetable-tabs fade-up">
+        <div class="tt-tab active" id="tab-class" onclick="switchTab('class')">Class</div>
+        <div class="tt-tab" id="tab-exam" onclick="switchTab('exam')">Exam</div>
+        <div class="tt-tab" id="tab-lab" onclick="switchTab('lab')">Lab</div>
+      </div>
+
+      <!-- Timetable Table -->
+      <div class="timetable-wrap fade-up" id="ttWrap">
+        <div id="tt-class">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:58px">Time</th>
+                <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="tt-time">8–9</td>
+                <td><span class="tt-cell-subject tt-math">Math</span></td>
+                <td><span class="tt-cell-subject tt-cs">DSA</span></td>
+                <td><span class="tt-cell-subject tt-phy">Physics</span></td>
+                <td><span class="tt-cell-subject tt-math">Math</span></td>
+                <td><span class="tt-cell-subject tt-chem">OS</span></td>
+              </tr>
+              <tr>
+                <td class="tt-time">9–10</td>
+                <td><span class="tt-cell-subject tt-cs">DSA</span></td>
+                <td><span class="tt-cell-subject tt-chem">OS</span></td>
+                <td><span class="tt-cell-subject tt-cs">DSA</span></td>
+                <td><span class="tt-cell-subject tt-phy">Physics</span></td>
+                <td><span class="tt-cell-subject tt-math">Math</span></td>
+              </tr>
+              <tr>
+                <td class="tt-time">10–11</td>
+                <td><span class="tt-cell-subject tt-phy">Physics</span></td>
+                <td><span class="tt-free">Free</span></td>
+                <td><span class="tt-cell-subject tt-chem">OS</span></td>
+                <td><span class="tt-free">Free</span></td>
+                <td><span class="tt-cell-subject tt-cs">DBMS</span></td>
+              </tr>
+              <tr>
+                <td class="tt-time">11–12</td>
+                <td><span class="tt-free">Free</span></td>
+                <td><span class="tt-cell-subject tt-math">Math</span></td>
+                <td><span class="tt-free">Free</span></td>
+                <td><span class="tt-cell-subject tt-cs">DBMS</span></td>
+                <td><span class="tt-cell-subject tt-phy">Physics</span></td>
+              </tr>
+              <tr>
+                <td class="tt-time">2–3</td>
+                <td><span class="tt-cell-subject tt-chem">OS</span></td>
+                <td><span class="tt-cell-subject tt-phy">Physics</span></td>
+                <td><span class="tt-cell-subject tt-math">Math</span></td>
+                <td><span class="tt-cell-subject tt-cs">DSA</span></td>
+                <td><span class="tt-free">Free</span></td>
+              </tr>
+              <tr>
+                <td class="tt-time">3–4</td>
+                <td><span class="tt-cell-subject tt-cs">DBMS</span></td>
+                <td><span class="tt-cell-subject tt-cs">DBMS</span></td>
+                <td><span class="tt-cell-subject tt-phy">Physics</span></td>
+                <td><span class="tt-cell-subject tt-chem">OS</span></td>
+                <td><span class="tt-cell-subject tt-math">Math</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="tt-exam" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:68px">Date</th>
+                <th>Subject</th>
+                <th>Time</th>
+                <th>Venue</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="tt-time">June 15</td><td><span class="tt-cell-subject tt-math">Math</span></td><td style="font-size:10px">9–12</td><td style="font-size:10px">Hall A</td></tr>
+              <tr><td class="tt-time">June 17</td><td><span class="tt-cell-subject tt-cs">DSA</span></td><td style="font-size:10px">9–12</td><td style="font-size:10px">Hall B</td></tr>
+              <tr><td class="tt-time">June 19</td><td><span class="tt-cell-subject tt-phy">Physics</span></td><td style="font-size:10px">2–5</td><td style="font-size:10px">Hall A</td></tr>
+              <tr><td class="tt-time">June 21</td><td><span class="tt-cell-subject tt-chem">OS</span></td><td style="font-size:10px">9–12</td><td style="font-size:10px">Hall C</td></tr>
+              <tr><td class="tt-time">June 23</td><td><span class="tt-cell-subject tt-cs">DBMS</span></td><td style="font-size:10px">2–5</td><td style="font-size:10px">Hall B</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="tt-lab" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:58px">Time</th>
+                <th>Mon</th><th>Wed</th><th>Fri</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="tt-time">8–10</td>
+                <td><span class="tt-cell-subject tt-lab">DS Lab</span></td>
+                <td><span class="tt-free">—</span></td>
+                <td><span class="tt-cell-subject tt-lab">Phy Lab</span></td>
+              </tr>
+              <tr>
+                <td class="tt-time">10–12</td>
+                <td><span class="tt-free">—</span></td>
+                <td><span class="tt-cell-subject tt-lab">DBMS Lab</span></td>
+                <td><span class="tt-free">—</span></td>
+              </tr>
+              <tr>
+                <td class="tt-time">2–4</td>
+                <td><span class="tt-cell-subject tt-lab">OS Lab</span></td>
+                <td><span class="tt-cell-subject tt-lab">DS Lab</span></td>
+                <td><span class="tt-free">—</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Notices -->
+      <div class="sec-title fade-up" style="padding-top:4px">Important Notices</div>
+      <div class="notice-card fade-up">
+        <div class="notice-dot" style="background:#FF4757"></div>
+        <div><div class="notice-text">Internal Assessment Marks uploaded. Check student portal.</div><div class="notice-date">Today, 8:00 AM</div></div>
+      </div>
+      <div class="notice-card fade-up">
+        <div class="notice-dot" style="background:#FFB347"></div>
+        <div><div class="notice-text">Semester exam schedule released. Download from below.</div><div class="notice-date">Yesterday</div></div>
+      </div>
+
+      <!-- Assignments -->
+      <div class="sec-title fade-up" style="padding-top:8px">Assignment Deadlines</div>
+      <div class="assignment-card fade-up">
+        <div class="asgn-left">
+          <div class="asgn-title">DSA — Graph Assignment</div>
+          <div class="asgn-sub">Submit on portal by midnight</div>
+        </div>
+        <div class="asgn-due">Due Today</div>
+      </div>
+      <div class="assignment-card fade-up">
+        <div class="asgn-left">
+          <div class="asgn-title">OS — Process Scheduling Report</div>
+          <div class="asgn-sub">Email to prof.sharma@mit.edu</div>
+        </div>
+        <div class="asgn-due">Due June 10</div>
+      </div>
+      <div class="assignment-card fade-up">
+        <div class="asgn-left">
+          <div class="asgn-title">DBMS — ER Diagram</div>
+          <div class="asgn-sub">Upload PDF to portal</div>
+        </div>
+        <div class="asgn-due ok">Due June 15</div>
+      </div>
+
+      <!-- Attendance -->
+      <div class="sec-title fade-up" style="padding-top:8px">Attendance Summary</div>
+      <div class="attend-card fade-up">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-family:'ABeeZee';font-size:14px;font-weight:700;color:#1a1a1a">This Semester</div>
+          <span class="badge" style="background:rgba(116,220,198,0.2);color:#0a5a4e;border-color:#1a1a1a;font-size:11px">86% Overall</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <div class="attend-bar-wrap">
+            <div class="attend-bar-bg"><div class="attend-bar-fill" style="height:92%;background:#78B7FF"></div></div>
+            <div class="attend-lbl">Math</div>
+          </div>
+          <div class="attend-bar-wrap">
+            <div class="attend-bar-bg"><div class="attend-bar-fill" style="height:88%;background:#74DCC6"></div></div>
+            <div class="attend-lbl">DSA</div>
+          </div>
+          <div class="attend-bar-wrap">
+            <div class="attend-bar-bg"><div class="attend-bar-fill" style="height:76%;background:#FFB347"></div></div>
+            <div class="attend-lbl">Physics</div>
+          </div>
+          <div class="attend-bar-wrap">
+            <div class="attend-bar-bg"><div class="attend-bar-fill" style="height:84%;background:#A78BFA"></div></div>
+            <div class="attend-lbl">OS</div>
+          </div>
+          <div class="attend-bar-wrap">
+            <div class="attend-bar-bg"><div class="attend-bar-fill" style="height:90%;background:#78B7FF"></div></div>
+            <div class="attend-lbl">DBMS</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:24px"></div>
+    </div>
+
+    <div class="fab" style="background:var(--sky);color:#0a3a6e" aria-label="Create Note">
+      <i class="ti ti-pencil-plus" aria-hidden="true"></i>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('dashboard')"><div class="nav-icon"><i class="ti ti-home" aria-hidden="true"></i></div><span class="nav-label">Home</span></div>
+      <div class="nav-item" onclick="goScreen('events')"><div class="nav-icon"><i class="ti ti-calendar-event" aria-hidden="true"></i></div><span class="nav-label">Events</span></div>
+      <div class="nav-item active" onclick="goScreen('academics')"><div class="nav-icon"><i class="ti ti-book" aria-hidden="true"></i></div><span class="nav-label">Classes</span></div>
+      <div class="nav-item" onclick="goScreen('clubs')"><div class="nav-icon"><i class="ti ti-users" aria-hidden="true"></i></div><span class="nav-label">Clubs</span></div>
+      <div class="nav-item" onclick="goScreen('profile')"><div class="nav-icon"><i class="ti ti-user" aria-hidden="true"></i></div><span class="nav-label">Profile</span></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ CLUBS ════════════════════ -->
+  <div class="screen" id="clubs">
+    <!-- Sidebar for clubs -->
+    <div class="sidebar-overlay" id="clubsSidebarOverlay" onclick="closeClubsSidebar()"></div>
+    <div class="sidebar" id="clubsSidebar">
+      <div class="sidebar-logo">ORBIT</div>
+      <div class="sidebar-sub">campus super-app</div>
+      <div class="sidebar-item" onclick="goScreen('dashboard');closeClubsSidebar()">
+        <div class="sidebar-icon" style="background:#FFF3E0;color:#5a3a00"><i class="ti ti-home" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Dashboard</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('events');closeClubsSidebar()">
+        <div class="sidebar-icon si-events"><i class="ti ti-calendar-event" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Events</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('academics');closeClubsSidebar()">
+        <div class="sidebar-icon si-academics"><i class="ti ti-book" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Academics</span>
+      </div>
+      <div class="sidebar-item" style="background:rgba(255,179,71,0.1);border-color:#e0dbd0" onclick="goScreen('clubs');closeClubsSidebar()">
+        <div class="sidebar-icon si-clubs"><i class="ti ti-users" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Clubs</span>
+      </div>
+      <div class="sidebar-item" onclick="goScreen('profile');closeClubsSidebar()">
+        <div class="sidebar-icon si-profile"><i class="ti ti-user-circle" aria-hidden="true"></i></div>
+        <span style="color:#1a1a1a">Profile</span>
+      </div>
+    </div>
+
+    <div style="background:var(--sun-bg);flex-shrink:0">
+      <div class="status-bar" style="color:#1a1a1a">
+        <span class="status-time">9:41</span>
+        <div class="status-icons"><i class="ti ti-wifi" aria-hidden="true"></i><i class="ti ti-battery-3" aria-hidden="true"></i></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:0 20px 12px">
+        <div class="icon-btn" onclick="openClubsSidebar()" aria-label="Menu"><i class="ti ti-menu-2" aria-hidden="true"></i></div>
+        <div class="page-title" style="padding:0;flex:1">Clubs</div>
+        <div class="icon-btn" aria-label="Notifications"><i class="ti ti-bell" aria-hidden="true"></i></div>
+      </div>
+      <div class="search-bar">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" placeholder="Search clubs & communities...">
+      </div>
+      <div class="filter-scroll">
+        <div class="filter-chip active">All</div>
+        <div class="filter-chip">Tech</div>
+        <div class="filter-chip">Arts</div>
+        <div class="filter-chip">Sports</div>
+        <div class="filter-chip">Cultural</div>
+        <div class="filter-chip">Academic</div>
+      </div>
+    </div>
+
+    <div class="scroll-body">
+      <!-- Joined Clubs -->
+      <div class="sec-title fade-up">My Clubs</div>
+      <div class="club-card fade-up">
+        <div class="club-header">
+          <div class="club-logo" style="background:#e0fdf7"><i class="ti ti-cpu" style="font-size:22px;color:#0a5a4e" aria-hidden="true"></i></div>
+          <div>
+            <div class="club-name">Tech Club MIT</div>
+            <div style="font-family:'Roboto';font-size:11px;color:#888">320 members</div>
+          </div>
+          <span class="badge" style="margin-left:auto;background:#e0fdf7;color:#0a5a4e;border-color:#1a1a1a;font-size:10px">Joined</span>
+        </div>
+        <div class="club-desc">Where coders, designers and innovators come together. Weekly sessions, hackathons, and workshops.</div>
+        <div class="club-footer">
+          <div class="club-members"><i class="ti ti-calendar-event" style="font-size:13px" aria-hidden="true"></i>HackFest — Today</div>
+          <button class="join-btn joined" aria-label="Member">Member</button>
+        </div>
+      </div>
+
+      <div class="club-card fade-up">
+        <div class="club-header">
+          <div class="club-logo" style="background:#ede9fe"><i class="ti ti-robot" style="font-size:22px;color:#3a1a6e" aria-hidden="true"></i></div>
+          <div>
+            <div class="club-name">Robotics Society</div>
+            <div style="font-family:'Roboto';font-size:11px;color:#888">128 members</div>
+          </div>
+          <span class="badge" style="margin-left:auto;background:#ede9fe;color:#3a1a6e;border-color:#1a1a1a;font-size:10px">Joined</span>
+        </div>
+        <div class="club-desc">Build autonomous robots, compete in RoboWars, and explore the future of automation.</div>
+        <div class="club-footer">
+          <div class="club-members"><i class="ti ti-calendar-event" style="font-size:13px" aria-hidden="true"></i>Workshop — June 12</div>
+          <button class="join-btn joined" aria-label="Member">Member</button>
+        </div>
+      </div>
+
+      <!-- Discover -->
+      <div class="sec-title fade-up">Discover Clubs</div>
+      <div class="club-card fade-up">
+        <div class="club-header">
+          <div class="club-logo" style="background:#fef9c3"><i class="ti ti-music" style="font-size:22px;color:#5a3a00" aria-hidden="true"></i></div>
+          <div>
+            <div class="club-name">Music & Arts Society</div>
+            <div style="font-family:'Roboto';font-size:11px;color:#888">210 members</div>
+          </div>
+        </div>
+        <div class="club-desc">Sing, play, paint, and create. Open to all students regardless of experience.</div>
+        <div class="club-footer">
+          <div class="club-members"><i class="ti ti-users" style="font-size:13px" aria-hidden="true"></i>210 members</div>
+          <button class="join-btn" aria-label="Join">Join</button>
+        </div>
+      </div>
+
+      <!-- Community Feed -->
+      <div class="sec-title fade-up">Community Feed</div>
+      <div class="feed-card fade-up">
+        <div class="feed-club-banner" style="background:linear-gradient(90deg,#74DCC6,#78B7FF)"></div>
+        <div class="feed-user">
+          <div class="feed-avatar" style="background:#e0fdf7">
+            <i class="ti ti-cpu" style="font-size:20px;color:#0a5a4e" aria-hidden="true"></i>
+          </div>
+          <div style="flex:1">
+            <div class="feed-name">Tech Club MIT</div>
+            <div class="feed-time">2 hours ago</div>
+          </div>
+          <span class="feed-tag" style="background:#e0fdf7;color:#0a5a4e">Announcement</span>
+          <i class="ti ti-dots" style="font-size:18px;color:#aaa;margin-left:8px;cursor:pointer" aria-hidden="true"></i>
+        </div>
+        <div class="feed-content">HackFest kickoff is <strong>TODAY at 2 PM</strong> in the Main Auditorium! Register if you haven't already. This year's theme is <strong>Sustainable Cities</strong> 🌱</div>
+        <div class="feed-highlight">
+          <i class="ti ti-info-circle" style="font-size:18px;color:#0a5a4e;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>
+          <span>Come ready with your team and ideas. Mentors will be available all day!</span>
+        </div>
+        <div class="feed-actions">
+          <div class="feed-action"><i class="ti ti-heart" aria-hidden="true"></i>48</div>
+          <div class="feed-action"><i class="ti ti-message-circle" aria-hidden="true"></i>12</div>
+          <div class="feed-action"><i class="ti ti-share" aria-hidden="true"></i>Share</div>
+        </div>
+      </div>
+
+      <div class="feed-card fade-up">
+        <div class="feed-club-banner" style="background:linear-gradient(90deg,#A78BFA,#78B7FF)"></div>
+        <div class="feed-user">
+          <div class="feed-avatar" style="background:#ede9fe">
+            <i class="ti ti-robot" style="font-size:20px;color:#4c1d95" aria-hidden="true"></i>
+          </div>
+          <div style="flex:1">
+            <div class="feed-name">Robotics Society</div>
+            <div class="feed-time">Yesterday</div>
+          </div>
+          <span class="feed-tag" style="background:#dcfce7;color:#15803d">Win</span>
+        </div>
+        <div class="feed-content">Our team just won <strong>2nd place</strong> at the Inter-College RoboWars 2026! Huge congratulations to Priya, Karthik, and the whole team. 🤖🎉</div>
+        <div class="feed-actions">
+          <div class="feed-action"><i class="ti ti-heart" aria-hidden="true"></i>124</div>
+          <div class="feed-action"><i class="ti ti-message-circle" aria-hidden="true"></i>31</div>
+          <div class="feed-action"><i class="ti ti-share" aria-hidden="true"></i>Share</div>
+        </div>
+      </div>
+
+      <div style="height:24px"></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('dashboard')"><div class="nav-icon"><i class="ti ti-home" aria-hidden="true"></i></div><span class="nav-label">Home</span></div>
+      <div class="nav-item" onclick="goScreen('events')"><div class="nav-icon"><i class="ti ti-calendar-event" aria-hidden="true"></i></div><span class="nav-label">Events</span></div>
+      <div class="nav-item" onclick="goScreen('academics')"><div class="nav-icon"><i class="ti ti-book" aria-hidden="true"></i></div><span class="nav-label">Classes</span></div>
+      <div class="nav-item active" onclick="goScreen('clubs')"><div class="nav-icon"><i class="ti ti-users" aria-hidden="true"></i></div><span class="nav-label">Clubs</span></div>
+      <div class="nav-item" onclick="goScreen('profile')"><div class="nav-icon"><i class="ti ti-user" aria-hidden="true"></i></div><span class="nav-label">Profile</span></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ PROFILE ════════════════════ -->
+  <div class="screen" id="profile">
+    <div style="position:absolute;top:0;left:0;right:0;z-index:10;pointer-events:none">
+      <div class="status-bar" style="color:#fff;pointer-events:all">
+        <span class="status-time">9:41</span>
+        <div class="status-icons"><i class="ti ti-wifi" aria-hidden="true"></i><i class="ti ti-battery-3" aria-hidden="true"></i></div>
+      </div>
+    </div>
+
+    <div class="scroll-body">
+      <div class="profile-hero">
+        <!-- Back button top-left -->
+        <div style="position:absolute;top:52px;left:16px;z-index:10">
+          <div class="icon-btn" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff;box-shadow:none" onclick="goScreen('dashboard')" aria-label="Back"><i class="ti ti-arrow-left" aria-hidden="true"></i></div>
+        </div>
+        <div style="height:44px"></div>
+        <div class="profile-top">
+          <div class="profile-pic">
+            <i class="ti ti-user-circle" style="font-size:44px;color:#4c1d95" aria-hidden="true"></i>
+          </div>
+          <div>
+            <div class="profile-name">Alya</div>
+            <div class="profile-dept">Computer Science & Engg.</div>
+            <div class="profile-year">3rd Year &bull; Roll: CS22B047</div>
+            <div class="level-badge" style="margin-top:8px"><i class="ti ti-star" style="font-size:13px" aria-hidden="true"></i>Level 7 — Achiever</div>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-num">24</div><div class="stat-lbl">Events</div></div>
+          <div class="stat-box"><div class="stat-num">3</div><div class="stat-lbl">Clubs</div></div>
+          <div class="stat-box"><div class="stat-num">12</div><div class="stat-lbl">Certs</div></div>
+          <div class="stat-box"><div class="stat-num">12d</div><div class="stat-lbl">Streak</div></div>
+        </div>
+        <!-- XP progress to next level -->
+        <div style="margin-top:20px;position:relative;z-index:1">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-family:'ABeeZee';font-size:11px;opacity:0.6">Level 7 → 8</span>
+            <span style="font-family:'Gugi';font-size:11px;color:#FFD66B">2,840 / 3,200 XP</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.12);border-radius:6px;height:6px;overflow:hidden">
+            <div style="width:88.75%;height:100%;background:linear-gradient(90deg,#FFD66B,#FFB347);border-radius:6px;transition:width 1s ease"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="sec-title fade-up" style="padding-top:20px;padding-bottom:12px">Achievement Badges</div>
+      <div class="badge-grid fade-up">
+        <div class="badge-item">
+          <div class="badge-icon"><i class="ti ti-rocket" style="font-size:30px;color:#74DCC6" aria-hidden="true"></i></div>
+          <div class="badge-name">First Hackathon</div>
+          <div class="badge-xp">+100 XP</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon"><i class="ti ti-trophy" style="font-size:30px;color:#FFB347" aria-hidden="true"></i></div>
+          <div class="badge-name">Top 3 Coder</div>
+          <div class="badge-xp">+300 XP</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon"><i class="ti ti-flame" style="font-size:30px;color:#FF4757" aria-hidden="true"></i></div>
+          <div class="badge-name">12 Day Streak</div>
+          <div class="badge-xp">+200 XP</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon"><i class="ti ti-certificate" style="font-size:30px;color:#A78BFA" aria-hidden="true"></i></div>
+          <div class="badge-name">Cert Collector</div>
+          <div class="badge-xp">+150 XP</div>
+        </div>
+        <div class="badge-item">
+          <div class="badge-icon"><i class="ti ti-users" style="font-size:30px;color:#78B7FF" aria-hidden="true"></i></div>
+          <div class="badge-name">Club Leader</div>
+          <div class="badge-xp">+250 XP</div>
+        </div>
+        <div class="badge-item" style="opacity:0.4">
+          <div class="badge-icon"><i class="ti ti-lock" style="font-size:30px;color:#aaa" aria-hidden="true"></i></div>
+          <div class="badge-name">Locked</div>
+          <div class="badge-xp">???</div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="sec-title fade-up">Growth Timeline</div>
+      <div class="timeline-card fade-up">
+        <div class="timeline-item">
+          <div class="tl-left">
+            <div class="tl-dot" style="background:#e0fdf7"><i class="ti ti-rocket" style="font-size:16px;color:#0a5a4e" aria-hidden="true"></i></div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">Won InnovateMIT Hackathon — 2nd Place</div>
+            <div class="tl-date">March 2026 &bull; +500 XP</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-left">
+            <div class="tl-dot" style="background:#ede9fe"><i class="ti ti-users" style="font-size:16px;color:#4c1d95" aria-hidden="true"></i></div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">Joined Robotics Society as Core Member</div>
+            <div class="tl-date">January 2026 &bull; +200 XP</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-left">
+            <div class="tl-dot" style="background:#dbeafe"><i class="ti ti-certificate" style="font-size:16px;color:#0a3a6e" aria-hidden="true"></i></div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">Completed ML Workshop — Certificate Earned</div>
+            <div class="tl-date">November 2025 &bull; +150 XP</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-left">
+            <div class="tl-dot" style="background:#fef9c3"><i class="ti ti-star" style="font-size:16px;color:#5a3a00" aria-hidden="true"></i></div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">Top Performer — Sem 3 Academics</div>
+            <div class="tl-date">October 2025 &bull; +300 XP</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="profile-btns fade-up">
+        <button class="btn btn-purple" style="flex:1;font-size:13px"><i class="ti ti-share" style="font-size:15px" aria-hidden="true"></i>Share Profile</button>
+        <button class="btn" style="flex:1;font-size:13px;background:#fff"><i class="ti ti-download" style="font-size:15px" aria-hidden="true"></i>Download Certs</button>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goScreen('dashboard')"><div class="nav-icon"><i class="ti ti-home" aria-hidden="true"></i></div><span class="nav-label">Home</span></div>
+      <div class="nav-item" onclick="goScreen('events')"><div class="nav-icon"><i class="ti ti-calendar-event" aria-hidden="true"></i></div><span class="nav-label">Events</span></div>
+      <div class="nav-item" onclick="goScreen('academics')"><div class="nav-icon"><i class="ti ti-book" aria-hidden="true"></i></div><span class="nav-label">Classes</span></div>
+      <div class="nav-item" onclick="goScreen('clubs')"><div class="nav-icon"><i class="ti ti-users" aria-hidden="true"></i></div><span class="nav-label">Clubs</span></div>
+      <div class="nav-item active" onclick="goScreen('profile')"><div class="nav-icon"><i class="ti ti-user" aria-hidden="true"></i></div><span class="nav-label">Profile</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Splash Animation ── */
+(function(){
+  var rings = document.querySelectorAll('.orbit-ring');
+  var logo  = document.getElementById('splashLogoText');
+  var tag   = document.getElementById('splashTagline');
+  var inner = document.getElementById('splashInner');
+
+  // Stagger ring reveal
+  rings.forEach(function(r, i){
+    setTimeout(function(){
+      r.style.transition = 'opacity 0.5s';
+      r.style.opacity = '1';
+    }, 200 + i*200);
+  });
+
+  // Logo text fade in
+  setTimeout(function(){
+    logo.style.transition = 'opacity 0.7s, transform 0.7s';
+    logo.style.transform = 'scale(1)';
+    logo.style.opacity = '1';
+  }, 1100);
+
+  // Tagline
+  setTimeout(function(){
+    tag.style.transition = 'opacity 0.7s, transform 0.7s';
+    tag.style.opacity = '1';
+    tag.style.transform = 'translateY(0)';
+  }, 1500);
+
+  // Go to dashboard
+  setTimeout(function(){
+    // Fade out splash
+    var splash = document.getElementById('splash');
+    splash.style.transition = 'opacity 0.6s';
+    splash.style.opacity = '0';
+    setTimeout(function(){ goScreen('dashboard'); }, 600);
+  }, 3200);
+
+  // Initial states for animation
+  logo.style.transform = 'scale(0.6)';
+  tag.style.transform = 'translateY(12px)';
+})();
+
+/* ── Screen Navigation ── */
+function goScreen(id){
+  var screens = document.querySelectorAll('.screen');
+  screens.forEach(function(s){
+    s.style.display = 'none';
+    s.classList.remove('active');
+  });
+  var target = document.getElementById(id);
+  if(target){
+    target.style.display = 'flex';
+    target.classList.add('active');
+    target.style.opacity = '0';
+    target.style.transform = 'translateY(12px)';
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        target.style.transition = 'opacity 0.3s, transform 0.3s';
+        target.style.opacity = '1';
+        target.style.transform = 'translateY(0)';
+      });
+    });
+    // Scroll to top
+    var scrollBody = target.querySelector('.scroll-body');
+    if(scrollBody) scrollBody.scrollTop = 0;
+    // Trigger fade-up
+    setTimeout(function(){
+      var fadeEls = target.querySelectorAll('.fade-up');
+      fadeEls.forEach(function(el, i){
+        setTimeout(function(){
+          el.style.transition = 'opacity 0.4s, transform 0.4s';
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, i * 60);
+      });
+    }, 100);
+    // Animate score bars when dashboard shows
+    if(id === 'dashboard'){
+      setTimeout(function(){
+        target.querySelectorAll('.score-bar-fill').forEach(function(bar){
+          bar.classList.add('animated');
+        });
+      }, 400);
+    }
+  }
+}
+
+/* ── Academics Sidebar ── */
+function openAcademicsSidebar(){
+  document.getElementById('academicsSidebarOverlay').classList.add('open');
+  document.getElementById('academicsSidebar').classList.add('open');
+}
+function closeAcademicsSidebar(){
+  document.getElementById('academicsSidebarOverlay').classList.remove('open');
+  document.getElementById('academicsSidebar').classList.remove('open');
+}
+
+/* ── Clubs Sidebar ── */
+function openClubsSidebar(){
+  document.getElementById('clubsSidebarOverlay').classList.add('open');
+  document.getElementById('clubsSidebar').classList.add('open');
+}
+function closeClubsSidebar(){
+  document.getElementById('clubsSidebarOverlay').classList.remove('open');
+  document.getElementById('clubsSidebar').classList.remove('open');
+}
+
+/* ── Event Detail Sidebar ── */
+function openEventSidebar(){
+  document.getElementById('eventSidebarOverlay').classList.add('open');
+  document.getElementById('eventSidebar').classList.add('open');
+}
+function closeEventSidebar(){
+  document.getElementById('eventSidebarOverlay').classList.remove('open');
+  document.getElementById('eventSidebar').classList.remove('open');
+}
+
+/* ── Sidebar ── */
+function openSidebar(){
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.getElementById('sidebar').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+/* ── Timetable Tab Switch ── */
+function switchTab(tab){
+  ['class','exam','lab'].forEach(function(t){
+    var el = document.getElementById('tt-'+t);
+    var btn = document.getElementById('tab-'+t);
+    if(t === tab){
+      el.style.display = '';
+      btn.classList.add('active');
+    } else {
+      el.style.display = 'none';
+      btn.classList.remove('active');
+    }
+  });
+}
+
+/* ── Filter chips toggle ── */
+document.querySelectorAll('.filter-chip').forEach(function(chip){
+  chip.addEventListener('click', function(){
+    var parent = this.parentElement;
+    parent.querySelectorAll('.filter-chip').forEach(function(c){ c.classList.remove('active'); });
+    this.classList.add('active');
+  });
+});
+
+/* ── Join button toggle ── */
+document.querySelectorAll('.join-btn:not(.joined)').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    this.textContent = 'Joined';
+    this.classList.add('joined');
+  });
+});
+
+/* ── Initialize first screen properly ── */
+(function(){
+  // Make sure dashboard fade-up elements start hidden
+  document.querySelectorAll('.fade-up').forEach(function(el){
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+  });
+})();
+</script>
+</body>
+</html>
